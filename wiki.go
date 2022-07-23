@@ -18,13 +18,13 @@ type page struct {
 
 //Save a page body to text file
 func (p *page) save() error {
-	const filename = p.Title + TEXT_FILE_EXTENSION
+	filename := p.Title + TEXT_FILE_EXTENSION
 	return os.WriteFile(filename, p.Body, 0600)
 }
 
 //Parse a page after reading it
-func loadPage(title string) (*Page, error) {
-	const filename = p.Title + TEXT_FILE_EXTENSION
+func loadPage(title string) (*page, error) { 
+	filename := title + TEXT_FILE_EXTENSION
 	body, err := os.ReadFile(filename)
 
 	//return the error if encoutering it
@@ -33,8 +33,13 @@ func loadPage(title string) (*Page, error) {
 	}
 
 	//return the page with the nil error
-	return &Page{Title: title, Body: body}, err
+	return &page{Title: title, Body: body}, err
 
 }
 
-
+func main() {
+	p1 := page{Title: "TestPage", Body: []byte("Test Body")}
+	p1.save()
+	p2, _ := loadPage(p1.Title)
+	fmt.Println(string(p2.Body))
+}
