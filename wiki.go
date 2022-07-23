@@ -55,7 +55,7 @@ func viewHandler(writer http.ResponseWriter, request *http.Request) {
 
 //Handle the qreust to URL which has prefix '/edit/'
 func editHandler(writer http.ResponseWriter, request *http.Request) {
-	title := r.URL.Path[len(EDIT_PREFIX):]
+	title := request.URL.Path[len(EDIT_PREFIX):]
 	p, err := loadPage(title)
 	if nil != err {
 		p = &page{Title: title}
