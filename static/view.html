@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<header>
+	<title>{{.Title}}</title>
+</header>
+
+<body>
+	<p>
+		<a href="/edit/{{.Title}}">edit</a>
+	</p>
+
+	<div>
+		{{printf "%s" .Body}}
+	</div>
+</body>
+
+</html>
