@@ -8,7 +8,11 @@ import (
 )
 
 const (
+	PORT = "8088"
+
 	TEXT_FILE_EXTENSION = ".txt"
+	
+	VIEW_PREFIX = "/view/"
 )
 
 type page struct {
@@ -42,15 +46,12 @@ func loadPage(title string) (*page, error) {
 
 //Handle the request to URL which has prefix '/view/'
 func viewHandler(writer http.ResponseWriter, request *http.Request) {
-	const PREFIX = "/view/"
-	title := request.URL.Path[len(PREFIX):]
+	title := request.URL.Path[len(VIEW_PREFIX):]
 	p, _ := loadPage(title)
 	fmt.Fprintf(writer, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
 func main() {
-	p1 := page{Title: "TestPage", Body: []byte("Test Body")}
-	p1.save()
-	p2, _ := loadPage(p1.Title)
-	fmt.Println(string(p2.Body))
+	http.HandleFunc(VIEW_PREFIX, viewHandler)
+	log.Fatal(http.ListenAndServe(":" + PORT, nil))
 }
