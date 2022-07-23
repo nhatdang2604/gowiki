@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
-	<header>
+	<head>
 		<title>Editing {{.Title}}</title>
-	</header>
+	</head>
 
 	<body>
-		<form action="/save/{.Title{}} method="POST"">
+		<form action="/save/{{.Title}}" method="POST">
 			<div>
-				<textarea name="body" row="20" cols="90">{{printf "%s" .Body}}}</textarea>
+				<textarea name="body" row="20" cols="90">{{printf "%s" .Body}}</textarea>
 			</div>
 
 			<div>

@@ -11,11 +11,11 @@ import (
 const (
 	PORT = "8088"
 
-	STATIC_FOLDER_PATH = "/static"
+	STATIC_FOLDER_PATH = "static/"
 
 	TEXT_FILE_EXTENSION = ".txt"
 	EDIT_TEMPLATE_FILENAME = "edit.html"
-
+	VIEW_TEMPLATE_FILENAME = "view.html"
 
 	VIEW_PREFIX = "/view/"
 	EDIT_PREFIX = "/edit/"
@@ -55,19 +55,29 @@ func loadPage(title string) (*page, error) {
 func viewHandler(writer http.ResponseWriter, request *http.Request) {
 	title := request.URL.Path[len(VIEW_PREFIX):]
 	p, _ := loadPage(title)
-	fmt.Fprintf(writer, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+	
+	filePath := STATIC_FOLDER_PATH + VIEW_TEMPLATE_FILENAME
+	renderTemplate(writer, filePath, p)
 }
 
-//Handle the qreust to URL which has prefix '/edit/'
+//Handle the request to URL which has prefix '/edit/'
 func editHandler(writer http.ResponseWriter, request *http.Request) {
 	title := request.URL.Path[len(EDIT_PREFIX):]
 	p, err := loadPage(title)
 	if nil != err {
 		p = &page{Title: title}
 	}
+	
+	fmt.Println(err)
+	filePath := STATIC_FOLDER_PATH + EDIT_TEMPLATE_FILENAME
+	renderTemplate(writer, filePath, p)
+}
 
-	templ, _ := template.ParseFiles(STATIC_FILE_PATH + "/" + EDIT_TEMPLATE_FILENAME)
-	templ.Execute(w, p)
+//Render a page to the html template into the browser, with a given
+// response, a html template file path, and the page to render
+func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
+	templ, _ := template.ParseFiles(filePath)
+	templ.Execute(writer, p)
 }
 
 func main() {
