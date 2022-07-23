@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"log"
+	"net/http"
 )
 
 const (
@@ -35,6 +37,15 @@ func loadPage(title string) (*page, error) {
 	//return the page with the nil error
 	return &page{Title: title, Body: body}, err
 
+}
+
+
+//Handle the request to URL which has prefix '/view/'
+func viewHandler(writer http.ResponseWriter, request *http.Request) {
+	const PREFIX = "/view/"
+	title := request.URL.Path[len(PREFIX):]
+	p, _ := loadPage(title)
+	fmt.Fprintf(writer, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
 func main() {
