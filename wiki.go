@@ -13,6 +13,8 @@ const (
 	TEXT_FILE_EXTENSION = ".txt"
 	
 	VIEW_PREFIX = "/view/"
+	EDIT_PREFIX = "/edit/"
+	SAVE_PREFIX = "/save/"
 )
 
 type page struct {
@@ -51,7 +53,26 @@ func viewHandler(writer http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(writer, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
+//Handle the qreust to URL which has prefix '/edit/'
+func editHandler(writer http.ResponseWriter, request *http.Request) {
+	title := r.URL.Path[len(EDIT_PREFIX):]
+	p, err := loadPage(title)
+	if nil != err {
+		p = &page{Title: title}
+	}
+
+	html :=	"<h1>Editing %s</h1>" +
+		"<form action=\"/save/%s\" method=\"POST\">" +
+		"<textarea name=\"body\">%s</textarea><br>" +
+		"<input type=\"submit\" value=\"Save\">" +
+		"</form>"
+
+	fmt.Fprintf(writer, html, p.Title, p.Title, p.Body)
+}
+
+
 func main() {
 	http.HandleFunc(VIEW_PREFIX, viewHandler)
+	http.HandleFunc(EDIT_PREFIX, editHandler)
 	log.Fatal(http.ListenAndServe(":" + PORT, nil))
 }
