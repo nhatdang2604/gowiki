@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"html/template"
 	"log"
 	"net/http"
 )
@@ -10,8 +11,12 @@ import (
 const (
 	PORT = "8088"
 
+	STATIC_FOLDER_PATH = "/static"
+
 	TEXT_FILE_EXTENSION = ".txt"
-	
+	EDIT_TEMPLATE_FILENAME = "edit.html"
+
+
 	VIEW_PREFIX = "/view/"
 	EDIT_PREFIX = "/edit/"
 	SAVE_PREFIX = "/save/"
@@ -61,15 +66,9 @@ func editHandler(writer http.ResponseWriter, request *http.Request) {
 		p = &page{Title: title}
 	}
 
-	html :=	"<h1>Editing %s</h1>" +
-		"<form action=\"/save/%s\" method=\"POST\">" +
-		"<textarea name=\"body\">%s</textarea><br>" +
-		"<input type=\"submit\" value=\"Save\">" +
-		"</form>"
-
-	fmt.Fprintf(writer, html, p.Title, p.Title, p.Body)
+	templ, _ := template.ParseFiles(STATIC_FILE_PATH + "/" + EDIT_TEMPLATE_FILENAME)
+	templ.Execute(w, p)
 }
-
 
 func main() {
 	http.HandleFunc(VIEW_PREFIX, viewHandler)

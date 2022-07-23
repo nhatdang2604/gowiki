@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<header>
+		<title>Editing {{.Title}}</title>
+	</header>
+
+	<body>
+		<form action="/save/{.Title{}} method="POST"">
+			<div>
+				<textarea name="body" row="20" cols="90">{{printf "%s" .Body}}}</textarea>
+			</div>
+
+			<div>
+				<input type="submit" value="Save">
+			</div>
+		</form>
+	</body>
+
+</html>
+
+
