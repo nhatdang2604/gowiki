@@ -22,6 +22,12 @@ const (
 	SAVE_PREFIX = "/save/"
 )
 
+var (
+	templates = template.Must(template.ParseFiles(
+		EDIT_TEMPLATE_FILENAME, 
+		VIEW_TEMPLATE_FILENAME))
+)
+
 type page struct {
 	Title string
 	Body []byte
@@ -104,17 +110,8 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 //Render a page to the html template into the browser, with a given
 // response, a html template file path, and the page to render
 func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
-	templ, err := template.ParseFiles(filePath)
 	
-	//Handle error come frome template.ParseFiles()
-	if nil != err {
-		throwInternalError(writer, err)
-		return
-	}
-
-	err = templ.Execute(writer, p)
-
-	//Handle error come from templ.Execute()
+	err := templates.ExecuteTemplate(writer, filePath, p)
 	if nil != err {
 		throwInternalError(writer, err)		
 	}
