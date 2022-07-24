@@ -54,8 +54,13 @@ func loadPage(title string) (*page, error) {
 //Handle the request to URL which has prefix '/view/'
 func viewHandler(writer http.ResponseWriter, request *http.Request) {
 	title := request.URL.Path[len(VIEW_PREFIX):]
-	p, _ := loadPage(title)
+	p, err := loadPage(title)
 	
+	if nil != err {
+		url := EDIT_PREFIX + title
+		http.Redirect(writer, request, url, http.StatusFound)
+	}
+
 	filePath := STATIC_FOLDER_PATH + VIEW_TEMPLATE_FILENAME
 	renderTemplate(writer, filePath, p)
 }
