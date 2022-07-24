@@ -98,8 +98,24 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 //Render a page to the html template into the browser, with a given
 // response, a html template file path, and the page to render
 func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
-	templ, _ := template.ParseFiles(filePath)
-	templ.Execute(writer, p)
+	templ, err := template.ParseFiles(filePath)
+	
+	//Handle error come frome template.ParseFiles()
+	if nil != err {
+		throwInternalError(writer, err)
+		return
+	}
+
+	err = templ.Execute(writer, p)
+
+	//Handle error come from templ.Execute()
+	if nil != err {
+		throwInternalError(writer, err)		
+	}
+}
+
+func throwInternalError(writer http.ResponseWriter, err error) {
+	http.Error(writer, err.Error(), http.StatusInternalServerError)
 }
 
 func main() {
