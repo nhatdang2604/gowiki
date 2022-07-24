@@ -25,8 +25,8 @@ const (
 
 var (
 	templates = template.Must(template.ParseFiles(
-		EDIT_TEMPLATE_FILENAME, 
-		VIEW_TEMPLATE_FILENAME))
+		STATIC_FOLDER_PATH + EDIT_TEMPLATE_FILENAME, 
+		STATIC_FOLDER_PATH + VIEW_TEMPLATE_FILENAME))
 
 	validPath = regexp.MustCompile("^(" + 
 					VIEW_PREFIX + "|" + 
@@ -66,7 +66,14 @@ func loadPage(title string) (*page, error) {
 
 //Handle the request to URL which has prefix '/view/'
 func viewHandler(writer http.ResponseWriter, request *http.Request) {
-	title := request.URL.Path[len(VIEW_PREFIX):]
+	title, err := getTitle(writer, request)
+	
+	//Doesn't have to throw internal server error, because
+	//	the getTitle() method already error handled
+	if nil != err {
+		return
+	}
+
 	p, err := loadPage(title)
 	
 	if nil != err {
@@ -74,25 +81,38 @@ func viewHandler(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, url, http.StatusFound)
 	}
 
-	filePath := STATIC_FOLDER_PATH + VIEW_TEMPLATE_FILENAME
-	renderTemplate(writer, filePath, p)
+	fileName := VIEW_TEMPLATE_FILENAME
+	renderTemplate(writer, fileName, p)
 }
 
 //Handle the request to URL which has prefix '/edit/'
 func editHandler(writer http.ResponseWriter, request *http.Request) {
-	title := request.URL.Path[len(EDIT_PREFIX):]
+	title, err := getTitle(writer, request)
+	
+	//Doesn't have to throw internal server error, because
+	//	the getTitle() method already error handled
+	if nil != err {
+		return
+	}
+	
 	p, err := loadPage(title)
 	if nil != err {
 		p = &page{Title: title}
 	}
 	
-	filePath := STATIC_FOLDER_PATH + EDIT_TEMPLATE_FILENAME
-	renderTemplate(writer, filePath, p)
+	fileName := EDIT_TEMPLATE_FILENAME
+	renderTemplate(writer, fileName, p)
 }
 
 //Handle the execution after saving an editted page
-func saveHandler(writer http.ResponseWriter, request *http.Request) {
-	title := request.URL.Path[len(SAVE_PREFIX):]
+func saveHandler(writer http.ResponseWriter, request *http.Request) {	
+	title, err := getTitle(writer, request)
+	
+	//Doesn't have to throw internal server error, because
+	//	the getTitle() method already error handled
+	if nil != err {
+		return
+	}
 	
 	//Name of the form's param in the /static/edit.html
 	const bodyParam = "body"
@@ -100,7 +120,7 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 	
 	//Get and save the current page
 	p:= &page{Title: title, Body: []byte(body)}
-	err := p.save()
+	err = p.save()
 
 	//Handler error after saving the editted page
 	if nil != err {
@@ -108,7 +128,7 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	//Redirect to the view page
+	//Redirect to the view page`
 	url := VIEW_PREFIX + title
 	http.Redirect(writer, request, url, http.StatusFound)
 }
