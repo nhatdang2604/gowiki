@@ -78,6 +78,23 @@ func editHandler(writer http.ResponseWriter, request *http.Request) {
 	renderTemplate(writer, filePath, p)
 }
 
+//Handle the execution after saving an editted page
+func saveHandler(writer http.ResponseWriter, request *http.Request) {
+	title := request.URL.Path[len(SAVE_PREFIX):]
+	
+	//Name of the form's param in the /static/edit.html
+	const bodyParam = "body"
+	body := request.FormValue(bodyParam)
+	
+	//Get and save the current page
+	p:= &page{Title: title, Body: []byte(body)}
+	p.save()
+
+	//Redirect to the view page
+	url := VIEW_PREFIX + title
+	http.Redirect(writer, request, url, http.StatusFound)
+}
+
 //Render a page to the html template into the browser, with a given
 // response, a html template file path, and the page to render
 func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
@@ -88,5 +105,6 @@ func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
 func main() {
 	http.HandleFunc(VIEW_PREFIX, viewHandler)
 	http.HandleFunc(EDIT_PREFIX, editHandler)
+	http.HandleFunc(SAVE_PREFIX, saveHandler)
 	log.Fatal(http.ListenAndServe(":" + PORT, nil))
 }
