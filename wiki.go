@@ -1,11 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"regexp"
 	"os"
 	"html/template"
 	"log"
 	"net/http"
+	"errors"
 )
 
 const (
@@ -26,6 +27,12 @@ var (
 	templates = template.Must(template.ParseFiles(
 		EDIT_TEMPLATE_FILENAME, 
 		VIEW_TEMPLATE_FILENAME))
+
+	validPath = regexp.MustCompile("^(" + 
+					VIEW_PREFIX + "|" + 
+					EDIT_PREFIX + "|" + 
+					SAVE_PREFIX + 
+					")([a-zA-Z0-9]+)$")
 )
 
 type page struct {
@@ -79,7 +86,6 @@ func editHandler(writer http.ResponseWriter, request *http.Request) {
 		p = &page{Title: title}
 	}
 	
-	fmt.Println(err)
 	filePath := STATIC_FOLDER_PATH + EDIT_TEMPLATE_FILENAME
 	renderTemplate(writer, filePath, p)
 }
@@ -117,8 +123,20 @@ func renderTemplate(writer http.ResponseWriter, filePath string, p *page) {
 	}
 }
 
+//Throw the StatusInternalServerError
 func throwInternalError(writer http.ResponseWriter, err error) {
 	http.Error(writer, err.Error(), http.StatusInternalServerError)
+}
+
+//Validate the title come from URL
+func getTitle(writer http.ResponseWriter, request *http.Request) (string, error) {
+	matchers := validPath.FindStringSubmatch(request.URL.Path)
+	if nil == matchers {
+		http.NotFound(writer, request)
+		return "", errors.New("Invalid Page Title")
+	}
+
+	return matchers[2], nil
 }
 
 func main() {
