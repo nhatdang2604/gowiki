@@ -88,7 +88,13 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 	
 	//Get and save the current page
 	p:= &page{Title: title, Body: []byte(body)}
-	p.save()
+	err := p.save()
+
+	//Handler error after saving the editted page
+	if nil != err {
+		throwInternalError(writer, err)
+		return
+	}
 
 	//Redirect to the view page
 	url := VIEW_PREFIX + title
