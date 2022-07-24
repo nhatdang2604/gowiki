@@ -13,6 +13,7 @@ const (
 	PORT = "8088"
 
 	STATIC_FOLDER_PATH = "static/"
+	DATA_FOLDER_PATH = "data/"
 
 	TEXT_FILE_EXTENSION = ".txt"
 	EDIT_TEMPLATE_FILENAME = "edit.html"
@@ -65,15 +66,7 @@ func loadPage(title string) (*page, error) {
 
 
 //Handle the request to URL which has prefix '/view/'
-func viewHandler(writer http.ResponseWriter, request *http.Request) {
-	title, err := getTitle(writer, request)
-	
-	//Doesn't have to throw internal server error, because
-	//	the getTitle() method already error handled
-	if nil != err {
-		return
-	}
-
+func viewHandler(writer http.ResponseWriter, request *http.Request, title string) {
 	p, err := loadPage(title)
 	
 	if nil != err {
@@ -86,15 +79,7 @@ func viewHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 //Handle the request to URL which has prefix '/edit/'
-func editHandler(writer http.ResponseWriter, request *http.Request) {
-	title, err := getTitle(writer, request)
-	
-	//Doesn't have to throw internal server error, because
-	//	the getTitle() method already error handled
-	if nil != err {
-		return
-	}
-	
+func editHandler(writer http.ResponseWriter, request *http.Request, title string) {
 	p, err := loadPage(title)
 	if nil != err {
 		p = &page{Title: title}
@@ -105,14 +90,7 @@ func editHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 //Handle the execution after saving an editted page
-func saveHandler(writer http.ResponseWriter, request *http.Request) {	
-	title, err := getTitle(writer, request)
-	
-	//Doesn't have to throw internal server error, because
-	//	the getTitle() method already error handled
-	if nil != err {
-		return
-	}
+func saveHandler(writer http.ResponseWriter, request *http.Request, title string) {	
 	
 	//Name of the form's param in the /static/edit.html
 	const bodyParam = "body"
@@ -120,7 +98,7 @@ func saveHandler(writer http.ResponseWriter, request *http.Request) {
 	
 	//Get and save the current page
 	p:= &page{Title: title, Body: []byte(body)}
-	err = p.save()
+	err := p.save()
 
 	//Handler error after saving the editted page
 	if nil != err {
@@ -159,9 +137,23 @@ func getTitle(writer http.ResponseWriter, request *http.Request) (string, error)
 	return matchers[2], nil
 }
 
+//Apply closure to wrapp the handlers function
+func makeHandler(handler func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		title, err := getTitle(writer, request)
+		
+		//No need to handle error, because the getTitle() method already do that
+		if nil != err {
+			return
+		}
+
+		handler(writer, request, title)
+	}
+}
+
 func main() {
-	http.HandleFunc(VIEW_PREFIX, viewHandler)
-	http.HandleFunc(EDIT_PREFIX, editHandler)
-	http.HandleFunc(SAVE_PREFIX, saveHandler)
+	http.HandleFunc(VIEW_PREFIX, makeHandler(viewHandler))
+	http.HandleFunc(EDIT_PREFIX, makeHandler(editHandler))
+	http.HandleFunc(SAVE_PREFIX, makeHandler(saveHandler))
 	log.Fatal(http.ListenAndServe(":" + PORT, nil))
 }
